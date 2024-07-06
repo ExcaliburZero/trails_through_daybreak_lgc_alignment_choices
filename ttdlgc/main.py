@@ -11,7 +11,7 @@ _FAILURE = 1
 
 
 def main(events_filepath: pathlib.Path) -> int:
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s> %(message)s")
 
     with open(events_filepath, "r", encoding="utf-8") as input_stream:
         events = Event.multiple_from_csv(input_stream)
