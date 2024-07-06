@@ -19,5 +19,10 @@ pip install .
 
 ### Development
 ```bash
+# Setup and activate conda environment (installs the correct Python version)
+conda env create -f trails_through_daybreak_lgc_alignment_choices.yml
+conda activate trails_through_daybreak_lgc_alignment_choices
+
+# Install library and dev dependencies (ex. linting tools)
 pip install -e '.[dev]'
 ```
