@@ -23,6 +23,13 @@ class Lgc:
     grey: int
     chaos: int
 
+    def __add__(self, other: "Lgc") -> "Lgc":
+        return Lgc(
+            law=self.law + other.law,
+            grey=self.grey + other.grey,
+            chaos=self.chaos + other.chaos,
+        )
+
 
 @dataclass(frozen=True)
 class Choice:
