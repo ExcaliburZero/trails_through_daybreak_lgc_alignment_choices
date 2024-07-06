@@ -24,3 +24,6 @@ dev = [
 
 [tool.mypy]
 strict = true
+
+[tool.ruff]
+lint.ignore = ["E731"]
