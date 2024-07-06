@@ -1,0 +1,6 @@
+name: trails_through_daybreak_lgc_alignment_choices
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
