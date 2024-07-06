@@ -2,7 +2,8 @@
 name = "trails_through_daybreak_lgc_alignment_choices"
 version = "0.0.1"
 dependencies = [
-    "typer>=0.12.3"
+    "typer>=0.12.3",
+    "pulp>=2.8.0"
 ]
 
 [tool.setuptools]
@@ -24,6 +25,7 @@ dev = [
 
 [tool.mypy]
 strict = true
+ignore_missing_imports = true
 
 [tool.ruff]
 lint.ignore = ["E731"]
