@@ -30,6 +30,9 @@ class Lgc:
             chaos=self.chaos + other.chaos,
         )
 
+    def simple_str(self) -> str:
+        return f"Lgc({self.law}, {self.grey}, {self.chaos})"
+
 
 @dataclass(frozen=True)
 class Choice:

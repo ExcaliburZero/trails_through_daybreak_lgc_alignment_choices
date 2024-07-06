@@ -18,11 +18,11 @@ class Simulation:
                     f"Attempted to apply an event that has already been applied: {event}"
                 )
 
-        logging.debug(f"Applying event: {(event, choice_index)}")
+        logging.debug(f"Applying event: {(event.name, choice_index)}")
         self.choices.append((event, choice_index))
 
         logging.debug(
-            f"  Applying completion LGC: {self.lgc} + {event.completion} = {self.lgc + event.completion}"
+            f"  Applying completion LGC: {self.lgc.simple_str()} + {event.completion.simple_str()} = {(self.lgc + event.completion).simple_str()}"
         )
         self.lgc += event.completion
         if choice_index is not None:
@@ -30,7 +30,7 @@ class Simulation:
 
             choice_lgc = event.choices[choice_index].impact
             logging.debug(
-                f"  Applying choice {choice_index} LGC: {self.lgc} + {choice_lgc} = {self.lgc + choice_lgc}"
+                f"  Applying choice {choice_index} LGC: {self.lgc.simple_str()} + {choice_lgc.simple_str()} = {(self.lgc + choice_lgc).simple_str()}"
             )
             self.lgc += choice_lgc
         else:

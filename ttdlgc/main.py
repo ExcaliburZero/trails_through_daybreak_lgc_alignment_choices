@@ -19,6 +19,7 @@ def main(events_filepath: pathlib.Path) -> int:
     simulation = Simulation(events=events)
 
     for event in events:
+        logging.debug("--------")
         if len(event.choices) == 0:
             simulation.apply(event, None)
         else:
