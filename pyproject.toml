@@ -1,9 +1,15 @@
 [project]
 name = "trails_through_daybreak_lgc_alignment_choices"
 version = "0.0.1"
+dependencies = [
+    "typer>=0.12.3"
+]
 
 [tool.setuptools]
 packages = ["ttdlgc"]
+
+[project.scripts]
+ttdlgc_solve = "ttdlgc:main_without_args"
 
 [build-system]
 requires = ["setuptools >= 61.0"]
