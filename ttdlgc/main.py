@@ -19,9 +19,6 @@ def main(events_filepath: pathlib.Path) -> int:
     with open(events_filepath, "r", encoding="utf-8") as input_stream:
         events = Event.multiple_from_csv(input_stream)
 
-    # TODO: remove
-    events = [event for event in events if len(event.choices) <= 2]
-
     problem = create_milp(events)
     logging.info(problem)
 
@@ -73,37 +70,30 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
             chaos_chapter_impacts[j].append(event.completion.chaos)
 
         if len(event.choices) > 0:
-            option_1 = pulp.LpVariable(
-                f"event_{i}_option_1",
-                0,
-                len(event.choices) - 1,
-                cat=pulp.const.LpInteger,
-            )
-            option_2 = pulp.LpVariable(
-                f"event_{i}_option_2",
-                0,
-                len(event.choices) - 1,
-                cat=pulp.const.LpInteger,
-            )
-            problem.addVariable(option_1)
-            problem.addVariable(option_2)
-            event_choices[i] = (option_1, option_2)
+            option_variables = []
+            for o in range(0, len(event.choices)):
+                option = pulp.LpVariable(
+                    f"event_{i}_option_{o}",
+                    0,
+                    1,
+                    cat=pulp.const.LpInteger,
+                )
+                problem.addVariable(option)
+                option_variables.append(option)
 
-            problem += option_1 + option_2 == 1, f"Pick one option for event {i}"
+            event_choices[i] = option_variables
+
+            problem += sum(option_variables) == 1, f"Pick one option for event {i}"
 
             for j in range(event.chapter, LAST_CHAPTER + 1):
-                law_chapter_impacts[j].append((option_1, event.choices[0].impact.law))
-                law_chapter_impacts[j].append((option_2, event.choices[1].impact.law))
-
-                grey_chapter_impacts[j].append((option_1, event.choices[0].impact.grey))
-                grey_chapter_impacts[j].append((option_2, event.choices[1].impact.grey))
-
-                chaos_chapter_impacts[j].append(
-                    (option_1, event.choices[0].impact.chaos)
-                )
-                chaos_chapter_impacts[j].append(
-                    (option_2, event.choices[1].impact.chaos)
-                )
+                for o, option in enumerate(option_variables):
+                    law_chapter_impacts[j].append((option, event.choices[o].impact.law))
+                    grey_chapter_impacts[j].append(
+                        (option, event.choices[o].impact.grey)
+                    )
+                    chaos_chapter_impacts[j].append(
+                        (option, event.choices[o].impact.chaos)
+                    )
 
     # Encode alignment impacts
     for alignment_name, variables, impact_set in [

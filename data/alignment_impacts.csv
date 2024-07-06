@@ -14,6 +14,7 @@ Chapter,Date,Name,Completion L,Completion G,Completion C,Route,Choice 1,Choice 1
 2,September 20,Ensuring the Safety of Sea Cave Tours,1,1,0,,,,,,,,,,,,,
 2,September 20,Eastern Quarter Tour Guide,1,0,0,,,,,,,,,,,,,
 2,September 20,Healthy Martial Arts Lesson,1,0,0,,,,,,,,,,,,,
+2,September 20,Investigate the Expert Cheaters,0,1,1,,Hand over to the Guild (L),5,0,0,Hand over to the police (G),0,5,0,Hand over to the Heiyhue (C),0,0,5
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
@@ -24,5 +25,4 @@ Chapter,Date,Name,Completion L,Completion G,Completion C,Route,Choice 1,Choice 1
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,
-5,November 20,VS Phase 1 Boss,0,0,0,Law,Deal the finishing blow (G),0,3,0,Take their weapon while avoiding vital parts & Hand over to the guild,4,0,0,Take their weapon while avoiding vital parts & Hand over to Heiyue,3,1,0
+,November 20,VS Phase 1 Boss,0,0,0,Law,Deal the finishing blow (G),0,3,0,Take their weapon while avoiding vital parts & Hand over to the guild,4,0,0,Take their weapon while avoiding vital parts & Hand over to Heiyue,3,1,0
