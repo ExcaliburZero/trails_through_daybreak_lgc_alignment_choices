@@ -35,20 +35,42 @@ def main(events_filepath: pathlib.Path) -> int:
 
 
 def create_milp(events: list[Event]) -> pulp.LpProblem:
-    problem = pulp.LpProblem()
+    problem = pulp.LpProblem("LGC Alignment", pulp.LpMaximize)
 
-    # Objective function
-    problem += 0, "objective"
+    # Create alignment variables
+    law_chapter_variables = [
+        pulp.LpVariable(f"law_at_chapter_{chapter}_end", cat=pulp.const.LpInteger)
+        for chapter in range(1, LAST_CHAPTER + 1)
+    ]
+    grey_chapter_variables = [
+        pulp.LpVariable(f"grey_at_chapter_{chapter}_end", cat=pulp.const.LpInteger)
+        for chapter in range(1, LAST_CHAPTER + 1)
+    ]
+    chaos_chapter_variables = [
+        pulp.LpVariable(f"chaos_at_chapter_{chapter}_end", cat=pulp.const.LpInteger)
+        for chapter in range(1, LAST_CHAPTER + 1)
+    ]
 
     law_chapter_impacts: dict[int, list[int | tuple[pulp.LpVariable, int]]] = (
         collections.defaultdict(lambda: [])
     )
+    grey_chapter_impacts: dict[int, list[int | tuple[pulp.LpVariable, int]]] = (
+        collections.defaultdict(lambda: [])
+    )
+    chaos_chapter_impacts: dict[int, list[int | tuple[pulp.LpVariable, int]]] = (
+        collections.defaultdict(lambda: [])
+    )
+
+    # Objective function
+    problem += law_chapter_variables[-1], "Maximize law alignment"
 
     # Encode event choices
     event_choices = {}
     for i, event in enumerate(events):
         for j in range(event.chapter, LAST_CHAPTER + 1):
             law_chapter_impacts[j].append(event.completion.law)
+            grey_chapter_impacts[j].append(event.completion.grey)
+            chaos_chapter_impacts[j].append(event.completion.chaos)
 
         if len(event.choices) > 0:
             option_1 = pulp.LpVariable(
@@ -73,23 +95,35 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
                 law_chapter_impacts[j].append((option_1, event.choices[0].impact.law))
                 law_chapter_impacts[j].append((option_2, event.choices[1].impact.law))
 
-    # Encode alignment impacts
-    for chapter, law_impacts in law_chapter_impacts.items():
-        variable = pulp.LpVariable(
-            f"law_at_chapter_{chapter}_end", cat=pulp.const.LpInteger
-        )
-        problem.addVariable(variable)
+                grey_chapter_impacts[j].append((option_1, event.choices[0].impact.grey))
+                grey_chapter_impacts[j].append((option_2, event.choices[1].impact.grey))
 
-        problem += (
-            variable
-            == sum(
-                [
-                    impact if isinstance(impact, int) else (impact[0] * impact[1])
-                    for impact in law_impacts
-                ]
-            ),
-            f"Law value at end of chapter {chapter}",
-        )
+                chaos_chapter_impacts[j].append(
+                    (option_1, event.choices[0].impact.chaos)
+                )
+                chaos_chapter_impacts[j].append(
+                    (option_2, event.choices[1].impact.chaos)
+                )
+
+    # Encode alignment impacts
+    for alignment_name, variables, impact_set in [
+        ("Law", law_chapter_variables, law_chapter_impacts),
+        ("Grey", grey_chapter_variables, grey_chapter_impacts),
+        ("Choas", chaos_chapter_variables, chaos_chapter_impacts),
+    ]:
+        for chapter, impacts in impact_set.items():
+            variable = variables[chapter - 1]
+
+            problem += (
+                variable
+                == sum(
+                    [
+                        impact if isinstance(impact, int) else (impact[0] * impact[1])
+                        for impact in impacts
+                    ]
+                ),
+                f"{alignment_name} value at end of chapter {chapter}",
+            )
 
     return problem
 
