@@ -1,0 +1,17 @@
+[project]
+name = "trails_through_daybreak_lgc_alignment_choices"
+version = "0.0.1"
+
+[tool.setuptools]
+packages = ["ttdlgc"]
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+    "black==24.4.2",
+    "mypy==1.10.1",
+    "ruff==0.5.1",
+]

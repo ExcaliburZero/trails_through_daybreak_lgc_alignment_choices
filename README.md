@@ -10,3 +10,14 @@ For example, the side quest "Investigat a Friend Who Stole" rewards 1 Law and 1 
 LGC alignment impact and choice information is from [ZekeBel's "LGC Alignment Guide"](https://steamcommunity.com/sharedfiles/filedetails/?id=3033273093) on Steam.
 
 https://steamcommunity.com/sharedfiles/filedetails/?id=3033273093
+
+## Installation
+### General
+```bash
+pip install .
+```
+
+### Development
+```bash
+pip install -e '.[dev]'
+```
