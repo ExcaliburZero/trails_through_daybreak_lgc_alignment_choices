@@ -89,6 +89,10 @@ class Event:
         events: list["Event"] = []
 
         for row in csv.DictReader(input_stream):
+            if row[CHAPTER] == "":
+                # Skip empty rows
+                continue
+
             chapter = int(row[CHAPTER])
             date = TtdDate.from_str(row[DATE])
             name = row[NAME]
