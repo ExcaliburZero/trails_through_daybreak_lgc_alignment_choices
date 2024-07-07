@@ -74,7 +74,7 @@ def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
 def create_milp(
     events: list[Event], constraints: Iterable[Constraint]
 ) -> pulp.LpProblem:
-    problem = pulp.LpProblem("LGC Alignment", pulp.LpMaximize)
+    problem = pulp.LpProblem("LGC_Alignment", pulp.LpMaximize)
 
     # Create alignment variables
     law_chapter_variables = [
