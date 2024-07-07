@@ -145,3 +145,37 @@ class Solution:
         writer.writerow({"name": "Route", "choice": self.route.name})
         for event, choice_index in self.choices:
             writer.writerow({"name": event.name, "choice": choice_index})
+
+    @staticmethod
+    def from_csv(events: list[Event], input_stream: IO[str]) -> "Solution":
+        route = None
+        choices = []
+        for row in csv.DictReader(input_stream):
+            assert "name" in row
+            assert "choice" in row
+
+            name = row["name"]
+            choice = row["choice"]
+
+            if name == "Route":
+                route = Route[choice]
+                continue
+
+            assert route is not None
+
+            event = None
+            for e in events:
+                if e.name == name:
+                    if e.required_route is not None and e.required_route != route:
+                        continue
+
+                    event = e
+                    break
+
+            assert event is not None
+
+            choices.append((event, int(choice)))
+
+        assert route is not None
+
+        return Solution(choices=choices, route=route)
