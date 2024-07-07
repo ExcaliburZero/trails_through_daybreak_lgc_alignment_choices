@@ -121,6 +121,9 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
         "Chaos route alignment requirement",
     )
 
+    # TODO: actually model the fourth route constraint instead
+    problem += fourth_route == 0, "Not modelling the fourth route for now..."
+
     # Encode alignment impacts
     for alignment_name, variables, impact_set in [
         ("Law", law_chapter_variables, law_chapter_impacts),
