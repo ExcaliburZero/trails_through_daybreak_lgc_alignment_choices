@@ -137,3 +137,11 @@ class Event:
 class Solution:
     choices: list[tuple[Event, int]]
     route: Route
+
+    def write_csv(self, output_stream: IO[str]) -> None:
+        writer = csv.DictWriter(output_stream, fieldnames=["name", "choice"])
+
+        writer.writeheader()
+        writer.writerow({"name": "Route", "choice": self.route.name})
+        for event, choice_index in self.choices:
+            writer.writerow({"name": event.name, "choice": choice_index})

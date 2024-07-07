@@ -11,8 +11,15 @@ SUCCESS = 0
 _FAILURE = 1
 
 
-def main(events_filepath: pathlib.Path) -> int:
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s> %(message)s")
+def main(
+    events_filepath: pathlib.Path,
+    output_solution_filepath: pathlib.Path,
+    verbose: bool = False,
+) -> int:
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format="%(levelname)s> %(message)s",
+    )
 
     with open(events_filepath, "r", encoding="utf-8") as input_stream:
         events = Event.multiple_from_csv(input_stream)
@@ -34,6 +41,10 @@ def main(events_filepath: pathlib.Path) -> int:
         logging.info(
             f"\t{event.name} chose <{event.choices[choice_index].name}> ({choice_index}) ({event.choices[choice_index].impact})"
         )
+
+    with open(output_solution_filepath, "w", encoding="utf8") as output_stream:
+        solution.write_csv(output_stream)
+    logging.info(f"Wrote generated solution to: {output_solution_filepath}")
 
     simulation = Simulation(events)
     simulation.apply_solution(solution)
