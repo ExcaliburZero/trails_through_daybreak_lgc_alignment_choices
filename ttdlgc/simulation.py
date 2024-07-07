@@ -2,7 +2,7 @@ from typing import Optional
 
 import logging
 
-from .events import Event, Lgc
+from .events import Event, Lgc, Solution
 
 
 class Simulation:
@@ -10,6 +10,26 @@ class Simulation:
         self.events = events
         self.choices: list[tuple[Event, Optional[int]]] = []
         self.lgc = Lgc(0, 0, 0)
+
+    def apply_solution(self, solution: Solution) -> None:
+        def get_event_choice(event: Event) -> int:
+            for cur_event, choice_index in solution.choices:
+                if event == cur_event:
+                    return choice_index
+
+            raise ValueError(f"Failed to find event: {event}")
+
+        for event in self.events:
+            if (
+                event.required_route is not None
+                and event.required_route != solution.route
+            ):
+                continue
+
+            if len(event.choices) == 0:
+                self.apply(event, None)
+            else:
+                self.apply(event, get_event_choice(event))
 
     def apply(self, event: Event, choice_index: Optional[int]) -> None:
         for old_event, _ in self.choices:

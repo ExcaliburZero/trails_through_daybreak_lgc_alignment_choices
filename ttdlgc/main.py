@@ -5,6 +5,7 @@ import typer
 
 from .events import Event
 from .milp import create_milp, extract_solution
+from .simulation import Simulation
 
 SUCCESS = 0
 _FAILURE = 1
@@ -17,13 +18,13 @@ def main(events_filepath: pathlib.Path) -> int:
         events = Event.multiple_from_csv(input_stream)
 
     problem = create_milp(events)
-    logging.info(problem)
+    logging.debug(problem)
 
     problem.solve()
-    logging.info("==============")
-    logging.info("Solution:")
+    logging.debug("==============")
+    logging.debug("Solution:")
     for vairable in problem.variables():
-        logging.info(f"{vairable} = {vairable.varValue}")
+        logging.debug(f"{vairable} = {vairable.varValue}")
 
     solution = extract_solution(events, problem)
     logging.info("===============")
@@ -33,6 +34,11 @@ def main(events_filepath: pathlib.Path) -> int:
         logging.info(
             f"\t{event.name} chose <{event.choices[choice_index].name}> ({choice_index}) ({event.choices[choice_index].impact})"
         )
+
+    simulation = Simulation(events)
+    simulation.apply_solution(solution)
+
+    logging.info(f"Final LGC = {simulation.lgc}")
 
     return SUCCESS
 
