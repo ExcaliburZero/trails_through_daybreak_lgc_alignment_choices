@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 import logging
 import pathlib
@@ -17,9 +17,17 @@ app = typer.Typer()
 
 @app.command()
 def solve(
-    events_filepath: pathlib.Path,
-    output_solution_filepath: Optional[pathlib.Path] = None,
-    constraint: Optional[list[Constraint]] = None,
+    events_filepath: Annotated[
+        pathlib.Path,
+        typer.Option(help="Filepath to CSV file containing event information."),
+    ],
+    output_solution_filepath: Annotated[
+        Optional[pathlib.Path],
+        typer.Option(help="Filepath to write the generated choices to."),
+    ] = None,
+    constraint: Annotated[
+        Optional[list[Constraint]], typer.Option(help="Constraints to add to the MILP.")
+    ] = None,
     verbose: bool = False,
 ) -> int:
     logging.basicConfig(
@@ -66,8 +74,14 @@ def solve(
 
 @app.command()
 def simulate(
-    events_filepath: pathlib.Path,
-    input_solution_filepath: pathlib.Path,
+    events_filepath: Annotated[
+        pathlib.Path,
+        typer.Option(help="Filepath to CSV file containing event information."),
+    ],
+    input_solution_filepath: Annotated[
+        pathlib.Path,
+        typer.Option(help="Filepath to CSV file of choices to load as input."),
+    ],
     verbose: bool = False,
 ) -> int:
     logging.basicConfig(
