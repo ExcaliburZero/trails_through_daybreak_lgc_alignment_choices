@@ -40,6 +40,12 @@ class Constraint(enum.Enum):
     ChaosLv5AtEnd = "ChaosLv5AtEnd"
 
 
+class Goal(enum.Enum):
+    MaximizeLaw = "MaximizeLaw"
+    MaximizeGrey = "MaximizeGrey"
+    MaximizeChaos = "MaximizeChaos"
+
+
 def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
     variables = problem.variablesDict()
 
@@ -72,7 +78,7 @@ def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
 
 
 def create_milp(
-    events: list[Event], constraints: Iterable[Constraint]
+    events: list[Event], constraints: Iterable[Constraint], goal: Optional[Goal]
 ) -> pulp.LpProblem:
     problem = pulp.LpProblem("LGC_Alignment", pulp.LpMaximize)
 
@@ -95,9 +101,14 @@ def create_milp(
     chaos_chapter_impacts: ImpactsDict = collections.defaultdict(lambda: [])
 
     # Objective function
-    problem += law_chapter_variables[-1], "Maximize law alignment"
-    # problem += grey_chapter_variables[-1], "Maximize grey alignment"
-    # problem += chaos_chapter_variables[-1], "Maximize chaos alignment"
+    if goal is None:
+        problem += 0 == 0, "No goal"
+    elif goal == Goal.MaximizeLaw:
+        problem += law_chapter_variables[-1], "Maximize law alignment"
+    elif goal == Goal.MaximizeGrey:
+        problem += grey_chapter_variables[-1], "Maximize grey alignment"
+    elif goal == Goal.MaximizeChaos:
+        problem += chaos_chapter_variables[-1], "Maximize chaos alignment"
 
     # Chapter 5 route
     law_route = pulp.LpVariable("chapter_5_route_law", cat=pulp.const.LpBinary)

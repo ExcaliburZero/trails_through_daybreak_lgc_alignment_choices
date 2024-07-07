@@ -8,7 +8,7 @@ import pulp
 import typer
 
 from .events import Event, Solution
-from .milp import create_milp, extract_solution, Constraint
+from .milp import create_milp, extract_solution, Constraint, Goal
 from .simulation import Simulation
 
 SUCCESS = 0
@@ -28,7 +28,12 @@ def solve(
         typer.Option(help="Filepath to write the generated choices to."),
     ] = None,
     constraint: Annotated[
-        Optional[list[Constraint]], typer.Option(help="Constraints to add to the MILP.")
+        Optional[list[Constraint]],
+        typer.Option(help="Hard constraints to add to the MILP."),
+    ] = None,
+    goal: Annotated[
+        Optional[Goal],
+        typer.Option(help="Goal/preference to have the solver optimize towards."),
     ] = None,
     verbose: bool = False,
 ) -> None:
@@ -42,7 +47,7 @@ def solve(
     if constraint is None:
         constraint = []
 
-    problem = create_milp(events, constraint)
+    problem = create_milp(events, constraint, goal)
     logger.debug(problem)
 
     solver = pulp.PULP_CBC_CMD(msg=0)
