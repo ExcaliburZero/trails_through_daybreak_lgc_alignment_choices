@@ -41,3 +41,8 @@ jobs:
     - name: Lint with black
       run: |
         black --check ttdlgc
+
+    - name: Run solve and simulate subcommands
+      run: |
+        ttdlgc_model solve --events-filepath data/alignment_impacts.csv --output-solution-filepath choices.csv
+        ttdlgc_model simulate --events-filepath data/alignment_impacts.csv --input-solution-filepath choices.csv
