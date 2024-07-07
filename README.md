@@ -1,4 +1,4 @@
-# trails_through_daybreak_lgc_alignment_choices [![Test](https://github.com/ExcaliburZero/trails_through_daybreak_lgc_alignment_choices/actions/workflows/test.yml/badge.svg)](https://github.com/ExcaliburZero/trails_through_daybreak_lgc_alignment_choices/actions/workflows/test.yml)
+# Trails Through Daybreak LGC Alignment Choices [![Test](https://github.com/ExcaliburZero/trails_through_daybreak_lgc_alignment_choices/actions/workflows/test.yml/badge.svg)](https://github.com/ExcaliburZero/trails_through_daybreak_lgc_alignment_choices/actions/workflows/test.yml)
 Analysis of LGC alignment choices in Trails through Daybreak.
 
 ## Alignment impact types
