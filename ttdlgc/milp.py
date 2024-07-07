@@ -9,6 +9,10 @@ from .events import Event, Route
 
 LAST_CHAPTER = 7
 
+LAW_LEVEL_3 = 60
+GREY_LEVEL_3 = 50
+CHAOS_LEVEL_3 = 30
+
 ImpactsDict = dict[
     int,
     list[
@@ -40,8 +44,8 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
     chaos_chapter_impacts: ImpactsDict = collections.defaultdict(lambda: [])
 
     # Objective function
-    problem += law_chapter_variables[-1], "Maximize law alignment"
-    # problem += grey_chapter_variables[-1], "Maximize grey alignment"
+    # problem += law_chapter_variables[-1], "Maximize law alignment"
+    problem += grey_chapter_variables[-1], "Maximize grey alignment"
     # problem += chaos_chapter_variables[-1], "Maximize chaos alignment"
 
     # Chapter 5 route
@@ -100,6 +104,22 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
                     chaos_chapter_impacts[j].append(
                         (route_variable, option, event.choices[o].impact.chaos)
                     )
+
+    # Encode requirements to start routes at chapter 5
+    # TODO: Model fourth route requirement
+    # TODO: Account for default route if alignment score is too low?
+    problem += (
+        law_route * LAW_LEVEL_3 <= law_chapter_variables[4],
+        "Law route alignment requirement",
+    )
+    problem += (
+        grey_route * GREY_LEVEL_3 <= grey_chapter_variables[4],
+        "Grey route alignment requirement",
+    )
+    problem += (
+        chaos_route * CHAOS_LEVEL_3 <= chaos_chapter_variables[4],
+        "Chaos route alignment requirement",
+    )
 
     # Encode alignment impacts
     for alignment_name, variables, impact_set in [
