@@ -25,15 +25,6 @@ ImpactsDict = dict[
 def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
     variables = problem.variablesDict()
 
-    choices = []
-    for i, event in enumerate(events):
-        if len(event.choices) > 0:
-            for o in range(0, len(event.choices)):
-                value = variables[f"event_{i}_option_{o}"]
-                if value.varValue > 0:
-                    choices.append((event, o))
-                    break
-
     route = None
     if variables["chapter_5_route_law"].varValue > 0:
         route = Route.Law
@@ -45,6 +36,19 @@ def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
         route = Route.Fourth
 
     assert route is not None
+
+    choices = []
+    for i, event in enumerate(events):
+        if event.required_route is not None and event.required_route != route:
+            continue
+
+        if len(event.choices) > 0:
+            for o in range(0, len(event.choices)):
+
+                value = variables[f"event_{i}_option_{o}"]
+                if value.varValue > 0:
+                    choices.append((event, o))
+                    break
 
     return Solution(choices=choices, route=route)
 
