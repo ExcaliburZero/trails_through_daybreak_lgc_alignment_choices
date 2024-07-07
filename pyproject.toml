@@ -10,7 +10,7 @@ dependencies = [
 packages = ["ttdlgc"]
 
 [project.scripts]
-ttdlgc_solve = "ttdlgc:main_without_args"
+ttdlgc_model = "ttdlgc:main_without_args"
 
 [build-system]
 requires = ["setuptools >= 61.0"]
