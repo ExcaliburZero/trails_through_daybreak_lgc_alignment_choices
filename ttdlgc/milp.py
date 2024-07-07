@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Iterable, Optional
 
 import collections
+import enum
 
 import pulp
 
@@ -13,6 +14,14 @@ LAW_LEVEL_3 = 60
 GREY_LEVEL_3 = 50
 CHAOS_LEVEL_3 = 30
 
+LAW_LEVEL_4 = 90
+GREY_LEVEL_4 = 75
+CHAOS_LEVEL_4 = 45
+
+LAW_LEVEL_5 = 120
+GREY_LEVEL_5 = 100
+CHAOS_LEVEL_5 = 75
+
 ImpactsDict = dict[
     int,
     list[
@@ -20,6 +29,15 @@ ImpactsDict = dict[
         | tuple[Optional[pulp.LpVariable], pulp.LpVariable, int]
     ],
 ]
+
+
+class Constraint(enum.Enum):
+    LawLv4AtEnd = "LawLv4AtEnd"
+    GreyLv4AtEnd = "GreyLv4AtEnd"
+    ChaosLv4AtEnd = "ChaosLv4AtEnd"
+    LawLv5AtEnd = "LawLv5AtEnd"
+    GreyLv5AtEnd = "GreyLv5AtEnd"
+    ChaosLv5AtEnd = "ChaosLv5AtEnd"
 
 
 def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
@@ -53,7 +71,9 @@ def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
     return Solution(choices=choices, route=route)
 
 
-def create_milp(events: list[Event]) -> pulp.LpProblem:
+def create_milp(
+    events: list[Event], constraints: Iterable[Constraint]
+) -> pulp.LpProblem:
     problem = pulp.LpProblem("LGC Alignment", pulp.LpMaximize)
 
     # Create alignment variables
@@ -197,5 +217,20 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
                 variable == expression,
                 f"{alignment_name} value at end of chapter {chapter}",
             )
+
+    # User-provided constraints
+    for constraint in constraints:
+        if constraint == Constraint.LawLv4AtEnd:
+            problem += law_chapter_variables[-1] >= LAW_LEVEL_4
+        elif constraint == Constraint.GreyLv4AtEnd:
+            problem += grey_chapter_variables[-1] >= GREY_LEVEL_4
+        elif constraint == Constraint.ChaosLv4AtEnd:
+            problem += chaos_chapter_variables[-1] >= CHAOS_LEVEL_4
+        elif constraint == Constraint.LawLv5AtEnd:
+            problem += law_chapter_variables[-1] >= LAW_LEVEL_5
+        elif constraint == Constraint.GreyLv5AtEnd:
+            problem += grey_chapter_variables[-1] >= GREY_LEVEL_5
+        elif constraint == Constraint.ChaosLv5AtEnd:
+            problem += chaos_chapter_variables[-1] >= CHAOS_LEVEL_5
 
     return problem

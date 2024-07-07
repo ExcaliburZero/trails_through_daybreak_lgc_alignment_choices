@@ -6,7 +6,7 @@ import pathlib
 import typer
 
 from .events import Event, Solution
-from .milp import create_milp, extract_solution
+from .milp import create_milp, extract_solution, Constraint
 from .simulation import Simulation
 
 SUCCESS = 0
@@ -17,6 +17,7 @@ def main(
     events_filepath: pathlib.Path,
     output_solution_filepath: Optional[pathlib.Path] = None,
     input_solution_filepath: Optional[pathlib.Path] = None,
+    constraint: Optional[list[Constraint]] = None,
     verbose: bool = False,
 ) -> int:
     logging.basicConfig(
@@ -28,7 +29,10 @@ def main(
         events = Event.multiple_from_csv(input_stream)
 
     if input_solution_filepath is None:
-        problem = create_milp(events)
+        if constraint is None:
+            constraint = []
+
+        problem = create_milp(events, constraint)
         logging.debug(problem)
 
         problem.solve()
