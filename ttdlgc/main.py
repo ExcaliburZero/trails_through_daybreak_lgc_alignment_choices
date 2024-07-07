@@ -2,6 +2,7 @@ from typing import Annotated, Any, Optional
 
 import logging
 import pathlib
+import sys
 
 import pulp
 import typer
@@ -30,7 +31,9 @@ def solve(
         Optional[list[Constraint]], typer.Option(help="Constraints to add to the MILP.")
     ] = None,
     verbose: bool = False,
-) -> int:
+) -> None:
+    failed = False
+
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(levelname)s> %(message)s",
@@ -53,6 +56,13 @@ def solve(
     for vairable in problem.variables():
         logging.debug(f"{vairable} = {vairable.varValue}")
 
+    logging.warn(f"{problem.status}")
+    if problem.status < 0:
+        logging.error("Failed to create a solution that satisfies all constraints.")
+        logging.error("The following is the solver's best attempt solution.")
+
+        failed = True
+
     solution = extract_solution(events, problem)
     logging.info("===============")
     logging.info("Choices:")
@@ -72,7 +82,8 @@ def solve(
 
     logging.info(f"Final LGC = {simulation.lgc}")
 
-    return SUCCESS
+    if failed:
+        sys.exit(1)
 
 
 @app.command()
@@ -86,7 +97,7 @@ def simulate(
         typer.Option(help="Filepath to CSV file of choices to load as input."),
     ],
     verbose: bool = False,
-) -> int:
+) -> None:
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(levelname)s> %(message)s",
@@ -103,8 +114,6 @@ def simulate(
     simulation.apply_solution(solution)
 
     logging.info(f"Final LGC = {simulation.lgc}")
-
-    return SUCCESS
 
 
 def main_without_args() -> Any:
