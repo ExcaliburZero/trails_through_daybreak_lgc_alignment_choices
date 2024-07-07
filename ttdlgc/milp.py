@@ -1,11 +1,21 @@
+from typing import Optional
+
 import collections
 
 import pulp
 
-from .events import Event
+from .events import Event, Route
 
 
 LAST_CHAPTER = 7
+
+ImpactsDict = dict[
+    int,
+    list[
+        tuple[Optional[pulp.LpVariable], int]
+        | tuple[Optional[pulp.LpVariable], pulp.LpVariable, int]
+    ],
+]
 
 
 def create_milp(events: list[Event]) -> pulp.LpProblem:
@@ -25,26 +35,43 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
         for chapter in range(1, LAST_CHAPTER + 1)
     ]
 
-    law_chapter_impacts: dict[int, list[int | tuple[pulp.LpVariable, int]]] = (
-        collections.defaultdict(lambda: [])
-    )
-    grey_chapter_impacts: dict[int, list[int | tuple[pulp.LpVariable, int]]] = (
-        collections.defaultdict(lambda: [])
-    )
-    chaos_chapter_impacts: dict[int, list[int | tuple[pulp.LpVariable, int]]] = (
-        collections.defaultdict(lambda: [])
-    )
+    law_chapter_impacts: ImpactsDict = collections.defaultdict(lambda: [])
+    grey_chapter_impacts: ImpactsDict = collections.defaultdict(lambda: [])
+    chaos_chapter_impacts: ImpactsDict = collections.defaultdict(lambda: [])
 
     # Objective function
     problem += law_chapter_variables[-1], "Maximize law alignment"
+    # problem += grey_chapter_variables[-1], "Maximize grey alignment"
+    # problem += chaos_chapter_variables[-1], "Maximize chaos alignment"
+
+    # Chapter 5 route
+    law_route = pulp.LpVariable("chapter_5_route_law", cat=pulp.const.LpBinary)
+    grey_route = pulp.LpVariable("chapter_5_route_grey", cat=pulp.const.LpBinary)
+    chaos_route = pulp.LpVariable("chapter_5_route_chaos", cat=pulp.const.LpBinary)
+    fourth_route = pulp.LpVariable("chapter_5_route_fourth", cat=pulp.const.LpBinary)
+
+    problem += (
+        law_route + grey_route + chaos_route + fourth_route == 1,
+        "Must do one and only one route during chapter 5",
+    )
 
     # Encode event choices
     event_choices = {}
     for i, event in enumerate(events):
+        route_variable = None
+        if event.required_route == Route.Law:
+            route_variable = law_route
+        elif event.required_route == Route.Grey:
+            route_variable = grey_route
+        elif event.required_route == Route.Chaos:
+            route_variable = chaos_route
+        elif event.required_route == Route.Fourth:
+            route_variable = fourth_route
+
         for j in range(event.chapter, LAST_CHAPTER + 1):
-            law_chapter_impacts[j].append(event.completion.law)
-            grey_chapter_impacts[j].append(event.completion.grey)
-            chaos_chapter_impacts[j].append(event.completion.chaos)
+            law_chapter_impacts[j].append((route_variable, event.completion.law))
+            grey_chapter_impacts[j].append((route_variable, event.completion.grey))
+            chaos_chapter_impacts[j].append((route_variable, event.completion.chaos))
 
         if len(event.choices) > 0:
             option_variables = []
@@ -64,31 +91,56 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
 
             for j in range(event.chapter, LAST_CHAPTER + 1):
                 for o, option in enumerate(option_variables):
-                    law_chapter_impacts[j].append((option, event.choices[o].impact.law))
+                    law_chapter_impacts[j].append(
+                        (route_variable, option, event.choices[o].impact.law)
+                    )
                     grey_chapter_impacts[j].append(
-                        (option, event.choices[o].impact.grey)
+                        (route_variable, option, event.choices[o].impact.grey)
                     )
                     chaos_chapter_impacts[j].append(
-                        (option, event.choices[o].impact.chaos)
+                        (route_variable, option, event.choices[o].impact.chaos)
                     )
 
     # Encode alignment impacts
     for alignment_name, variables, impact_set in [
         ("Law", law_chapter_variables, law_chapter_impacts),
         ("Grey", grey_chapter_variables, grey_chapter_impacts),
-        ("Choas", chaos_chapter_variables, chaos_chapter_impacts),
+        ("Chaos", chaos_chapter_variables, chaos_chapter_impacts),
     ]:
         for chapter, impacts in impact_set.items():
             variable = variables[chapter - 1]
 
+            expression = 0
+            for j, impact in enumerate(impacts):
+                if len(impact) == 2:
+                    required_route, effect = impact
+
+                    if required_route is None:
+                        expression += effect
+                    else:
+                        expression += required_route * effect
+                elif len(impact) == 3:
+                    required_route, option, effect = impact
+
+                    if required_route is None:
+                        expression += option * effect
+                    else:
+                        # Would be `required_route * option * effect`, but we need to keep it linear
+                        # https://or.stackexchange.com/questions/37/how-to-linearize-the-product-of-two-binary-variables
+                        variable_both = pulp.LpVariable(
+                            f"route_and_option_{alignment_name}_{chapter}_{j}",
+                            cat=pulp.const.LpBinary,
+                        )
+                        problem.addVariable(variable_both)
+
+                        problem += variable_both <= required_route
+                        problem += variable_both <= option
+                        problem += variable_both >= required_route + option - 1
+
+                        expression += variable_both * effect
+
             problem += (
-                variable
-                == sum(
-                    [
-                        impact if isinstance(impact, int) else (impact[0] * impact[1])
-                        for impact in impacts
-                    ]
-                ),
+                variable == expression,
                 f"{alignment_name} value at end of chapter {chapter}",
             )
 
