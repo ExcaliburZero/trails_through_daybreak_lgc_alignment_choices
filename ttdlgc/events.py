@@ -131,3 +131,9 @@ class Event:
             )
 
         return events
+
+
+@dataclass
+class Solution:
+    choices: list[tuple[Event, int]]
+    route: Route

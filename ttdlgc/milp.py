@@ -4,7 +4,7 @@ import collections
 
 import pulp
 
-from .events import Event, Route
+from .events import Event, Route, Solution
 
 
 LAST_CHAPTER = 7
@@ -20,6 +20,33 @@ ImpactsDict = dict[
         | tuple[Optional[pulp.LpVariable], pulp.LpVariable, int]
     ],
 ]
+
+
+def extract_solution(events: list[Event], problem: pulp.LpProblem) -> Solution:
+    variables = problem.variablesDict()
+
+    choices = []
+    for i, event in enumerate(events):
+        if len(event.choices) > 0:
+            for o in range(0, len(event.choices)):
+                value = variables[f"event_{i}_option_{o}"]
+                if value.varValue > 0:
+                    choices.append((event, o))
+                    break
+
+    route = None
+    if variables["chapter_5_route_law"].varValue > 0:
+        route = Route.Law
+    elif variables["chapter_5_route_grey"].varValue > 0:
+        route = Route.Grey
+    elif variables["chapter_5_route_chaos"].varValue > 0:
+        route = Route.Chaos
+    elif variables["chapter_5_route_fourth"].varValue > 0:
+        route = Route.Fourth
+
+    assert route is not None
+
+    return Solution(choices=choices, route=route)
 
 
 def create_milp(events: list[Event]) -> pulp.LpProblem:
@@ -44,8 +71,8 @@ def create_milp(events: list[Event]) -> pulp.LpProblem:
     chaos_chapter_impacts: ImpactsDict = collections.defaultdict(lambda: [])
 
     # Objective function
-    # problem += law_chapter_variables[-1], "Maximize law alignment"
-    problem += grey_chapter_variables[-1], "Maximize grey alignment"
+    problem += law_chapter_variables[-1], "Maximize law alignment"
+    # problem += grey_chapter_variables[-1], "Maximize grey alignment"
     # problem += chaos_chapter_variables[-1], "Maximize chaos alignment"
 
     # Chapter 5 route

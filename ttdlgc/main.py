@@ -4,7 +4,7 @@ import pathlib
 import typer
 
 from .events import Event
-from .milp import create_milp
+from .milp import create_milp, extract_solution
 
 SUCCESS = 0
 _FAILURE = 1
@@ -24,6 +24,15 @@ def main(events_filepath: pathlib.Path) -> int:
     logging.info("Solution:")
     for vairable in problem.variables():
         logging.info(f"{vairable} = {vairable.varValue}")
+
+    solution = extract_solution(events, problem)
+    logging.info("===============")
+    logging.info("Choices:")
+    logging.info(f"\tChapter 5 Route: {solution.route}")
+    for event, choice_index in solution.choices:
+        logging.info(
+            f"\t{event.name} chose <{event.choices[choice_index].name}> ({choice_index}) ({event.choices[choice_index].impact})"
+        )
 
     return SUCCESS
 
