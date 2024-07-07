@@ -3,6 +3,7 @@ from typing import Annotated, Any, Optional
 import logging
 import pathlib
 
+import pulp
 import typer
 
 from .events import Event, Solution
@@ -44,7 +45,9 @@ def solve(
     problem = create_milp(events, constraint)
     logging.debug(problem)
 
-    problem.solve()
+    solver = pulp.PULP_CBC_CMD(msg=0)
+
+    problem.solve(solver)
     logging.debug("==============")
     logging.debug("Solution:")
     for vairable in problem.variables():
